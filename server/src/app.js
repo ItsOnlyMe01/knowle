@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 
 const app = express();
-// path.resolve() in ES modules when run from the root gives the project root directory
+// This works because Render starts the process from the project root
 const __dirname = path.resolve();
 
 // Middleware setup
@@ -76,27 +76,23 @@ app.get("/api/health", (req, res) => {
 });
 
 // --- DEPLOYMENT CONFIGURATION ---
-// This part serves the frontend in production
 if (process.env.NODE_ENV === "production") {
-  // Since the start command is run from the root 'knowle' folder,
-  // we point directly to client/dist
-  const clientBuildPath = path.join(__dirname, "client", "dist");
+  // Since you are using 'cd server && node src/index.js' in package.json,
+  // we must go UP one level from 'server' to reach the root, then into 'client/dist'
+  const clientBuildPath = path.join(__dirname, "..", "client", "dist");
 
   if (fs.existsSync(clientBuildPath)) {
     app.use(express.static(clientBuildPath));
 
-    // For any request that doesn't match an API route, serve the React index.html
     app.get("*", (req, res) => {
       res.sendFile(path.join(clientBuildPath, "index.html"));
     });
   } else {
-    // Fallback if the build folder isn't found during runtime
     app.get("*", (req, res) => {
-      res.status(500).send("Frontend build not found. Verify build step.");
+      res.status(500).send(`Build folder not found at: ${clientBuildPath}`);
     });
   }
 } else {
-  // Fallback for local development
   app.get("*", (req, res) => {
     res.status(404).json({ message: "API Route not found" });
   });
