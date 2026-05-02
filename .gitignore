@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+.DS_Store
+
+# Secrets (IMPORTANT)
+.env
+**/.env
+server/.env
+admin-support-service/.env
+
+# Build outputs
+dist/
+build/
