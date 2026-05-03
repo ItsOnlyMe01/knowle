@@ -1,0 +1,14 @@
+{
+  "name": "knowle-monolith",
+  "version": "1.0.0",
+  "description": "Unified build for Knowle",
+  "main": "server/src/index.js",
+  "scripts": {
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
+    "build": "npm run install-all && cd client && npm run build",
+    "start": "cd server && node src/index.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
