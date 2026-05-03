@@ -7,6 +7,7 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../context/ThemeContext.jsx";
 
+// Click outside hook
 const useOnClickOutside = (ref, handler) => {
   useEffect(() => {
     const listener = (event) => {
@@ -24,9 +25,11 @@ const useOnClickOutside = (ref, handler) => {
 
 const ThemeSwitcher = () => {
   const { theme, toggleTheme } = useTheme();
-
   return (
-    <button onClick={toggleTheme} className="p-2">
+    <button
+      onClick={toggleTheme}
+      className="p-2 rounded-full text-textSecondary hover:bg-gray-100 dark:hover:bg-gray-700"
+    >
       {theme === "light" ? "🌙" : "☀️"}
     </button>
   );
@@ -36,10 +39,9 @@ const Header = () => {
   const { user, logout } = useContext(AuthContext);
   const { t, i18n } = useTranslation();
 
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
-
   const dropdownContainerRef = useRef(null);
+
   useOnClickOutside(dropdownContainerRef, () => setOpenDropdown(null));
 
   const toggleDropdown = (category) => {
@@ -47,39 +49,58 @@ const Header = () => {
   };
 
   const closeMenus = () => {
-    setIsDrawerOpen(false);
     setOpenDropdown(null);
   };
 
+  // SAME structure, just safe
   const navStructure = useMemo(
     () =>
       [
         {
-          category: "Growth",
+          category: t("header.growth"),
           condition: user,
-          links: [{ to: "/projects", label: "Projects", condition: user }],
+          links: [
+            { to: "/projects", label: t("header.projects"), condition: user },
+          ],
         },
       ].filter((item) => item.condition),
-    [user],
+    [t, user, i18n.language],
   );
 
   const renderNavLinks = () => (
     <>
-      <NavLink to="/">Home</NavLink>
+      {/* Home */}
+      <NavLink
+        to="/"
+        onClick={closeMenus}
+        className="px-3 py-2 rounded-md text-sm font-medium text-textSecondary hover:text-primary hover:bg-primary/10"
+      >
+        {t("header.home")}
+      </NavLink>
 
+      {/* Dropdown */}
       {(navStructure || []).map((item) => (
-        <div key={item.category}>
-          <button onClick={() => toggleDropdown(item.category)}>
+        <div key={item.category} className="relative">
+          <button
+            onClick={() => toggleDropdown(item.category)}
+            className="px-3 py-2 rounded-md text-sm font-medium text-textSecondary hover:text-primary hover:bg-primary/10 flex items-center"
+          >
             {item.category}
           </button>
 
           {openDropdown === item.category && (
-            <ul>
+            <ul className="absolute right-0 mt-2 w-48 bg-surface rounded-md shadow-lg z-20 py-1">
               {(item.links || [])
                 .filter((link) => link.condition)
                 .map((link) => (
                   <li key={link.to}>
-                    <NavLink to={link.to}>{link.label}</NavLink>
+                    <NavLink
+                      to={link.to}
+                      onClick={closeMenus}
+                      className="block px-4 py-2 text-sm text-textSecondary hover:text-primary hover:bg-gray-100"
+                    >
+                      {link.label}
+                    </NavLink>
                   </li>
                 ))}
             </ul>
@@ -90,17 +111,35 @@ const Header = () => {
   );
 
   return (
-    <header>
-      <nav>
-        <Link to="/">Knowle</Link>
+    <header className="bg-surface shadow-md sticky top-0 z-30">
+      <nav className="container mx-auto px-4 py-3 flex justify-between items-center">
+        {/* Logo */}
+        <Link to="/" className="text-2xl font-bold text-primary">
+          Knowle
+        </Link>
 
-        <div ref={dropdownContainerRef}>{renderNavLinks()}</div>
+        {/* Center nav */}
+        <div className="flex items-center space-x-2" ref={dropdownContainerRef}>
+          {renderNavLinks()}
+        </div>
 
-        {user ? (
-          <button onClick={logout}>Logout</button>
-        ) : (
-          <Link to="/login">Login</Link>
-        )}
+        {/* Right side */}
+        <div className="flex items-center space-x-3">
+          {user ? (
+            <>
+              <Notifications />
+              <Button onClick={logout} variant="outline">
+                {t("header.logout")}
+              </Button>
+            </>
+          ) : (
+            <Link to="/login">
+              <Button>{t("header.login")}</Button>
+            </Link>
+          )}
+          <ThemeSwitcher />
+          <LanguageSwitcher />
+        </div>
       </nav>
     </header>
   );
