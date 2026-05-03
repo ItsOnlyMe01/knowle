@@ -2,13 +2,16 @@ import React from "react";
 import TaskCard from "./TaskCard";
 
 const KanbanColumn = ({ title, tasks, status, onUpdateTask, onDeleteTask }) => {
+  const safeTasks = tasks || [];
+
   return (
     <div className="bg-gray-100 rounded-lg p-4 w-full md:w-1/3">
       <h3 className="font-bold text-lg text-textPrimary mb-4">
-        {title} ({tasks.length})
+        {title} ({safeTasks.length})
       </h3>
+
       <div className="space-y-4">
-        {tasks.map((task) => (
+        {safeTasks.map((task) => (
           <TaskCard
             key={task._id}
             task={task}
@@ -23,7 +26,8 @@ const KanbanColumn = ({ title, tasks, status, onUpdateTask, onDeleteTask }) => {
 };
 
 const KanbanBoard = ({ tasks, onUpdateTask, onDeleteTask }) => {
-  const safeTasks = Array.isArray(tasks) ? tasks : [];
+  const safeTasks = tasks || [];
+
   const todoTasks = safeTasks.filter((t) => t.status === "To Do");
   const inProgressTasks = safeTasks.filter((t) => t.status === "In Progress");
   const doneTasks = safeTasks.filter((t) => t.status === "Done");
@@ -37,6 +41,7 @@ const KanbanBoard = ({ tasks, onUpdateTask, onDeleteTask }) => {
         onUpdateTask={onUpdateTask}
         onDeleteTask={onDeleteTask}
       />
+
       <KanbanColumn
         title="In Progress"
         tasks={inProgressTasks}
@@ -44,6 +49,7 @@ const KanbanBoard = ({ tasks, onUpdateTask, onDeleteTask }) => {
         onUpdateTask={onUpdateTask}
         onDeleteTask={onDeleteTask}
       />
+
       <KanbanColumn
         title="Done"
         tasks={doneTasks}
